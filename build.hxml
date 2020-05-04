@@ -1,0 +1,4 @@
+-js bin/main.js
+-D js-es=6
+-main Main
+
