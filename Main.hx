@@ -24,14 +24,10 @@ class Main implements JSAsync {
 		timer(1000).await();
 		trace("fetching url");
 		var text = fetchText("http://someurl").await();
-		trace(text);
+		return "(" + text + ")";
 	}
 
 	@:js.async static function fetchText(url : String) {
-		function test() {
-			return 10;
-		}
-		timer(test());
 		return Browser.window.fetch(url).await().text().await();
 	}
 }
