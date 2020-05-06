@@ -91,10 +91,10 @@ class Macro {
 	*/
 	static function fixOutputFile() {
 		var output = Compiler.getOutput();
-		var markerRegEx = ~/(function\s?)?("(?:[^"\\]|\\.)*"|\w+)?(\s?\([^)]*\)\s*{)\s*%%async_marker%%;/g;
+		var markerRegEx = ~/((?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^)]*\)\s*{[^{}]*?)\s*%%async_marker%%;/g;
 		var returnNothingRegEx = ~/\s*return %%async_nothing%%;/g;
 		var outputContent = sys.io.File.getContent(output);
-		outputContent = markerRegEx.replace(outputContent, "async $1$2$3");
+		outputContent = markerRegEx.replace(outputContent, "async $1");
 		outputContent = returnNothingRegEx.replace(outputContent, "");
 		File.saveContent(output, outputContent);
 	}
