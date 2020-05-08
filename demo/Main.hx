@@ -21,18 +21,18 @@ class Main {
 		trace( things.map(text -> text.length) );
 
 		// Use JSAsync.func macro to create anonymous async functions
-		var localAsyncFunction = JSAsync.func(function() {
-			trace("Running local async function");
+		var localAsyncFunction = JSAsync.func(function(name:String) {
+			trace("Running local async function " + name);
 			timer(1000).await();
-			return "Done!";
+			return name + " done!";
 		});
 
-		trace(localAsyncFunction().await());
-		trace(localAsyncFunction().await());
+		trace(localAsyncFunction("A").await());
+		trace(localAsyncFunction("B").await());
 
-		var a = localAsyncFunction();
-		var b = localAsyncFunction();
-		trace( a.await() + b.await() );
+		var a = localAsyncFunction("C");
+		var b = localAsyncFunction("D");
+		trace( a.await() + " " + b.await() );
 	}
 
 	@:jsasync static function count(numbers:Int) {
