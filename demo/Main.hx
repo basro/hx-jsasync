@@ -1,5 +1,6 @@
 package demo;
 
+import haxe.Json;
 import jsasync.IJSAsync;
 import jsasync.JSAsync;
 import js.lib.Promise;
@@ -54,10 +55,14 @@ class Main {
 			var text = Browser.window.fetch(url).await().text();
 			trace('Fetched $url');
 			return text;
-		} catch(e) {
+		} catch(e : Any) {
 			trace('Failed to fetch $url');
 		}
 		return "";
 	}
-}
 
+	@:jsasync static function fetchJSon(url : String) {
+		var text = Browser.window.fetch(url).await().text().await();
+		return Json.parse(text);
+	}
+}
