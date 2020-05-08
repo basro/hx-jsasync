@@ -11,3 +11,6 @@
 
 # Enables the usage of @:jsasync on all classes inside the demo package.
 --macro jsasync.JSAsync.use("demo")
+
+# Disables the JSAsync output fixing pass even if markers were generated.
+#-D jsasync-no-fix-pass

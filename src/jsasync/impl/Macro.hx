@@ -96,6 +96,7 @@ class Macro {
 		Adds "async" to functions marked with %%async_marker%% and removes "return %%async_nothing%%;"
 	*/
 	static function fixOutputFile() {
+		if ( Context.defined("jsasync-no-fix-pass") ) return;
 		var output = Compiler.getOutput();
 		var markerRegEx = ~/((?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^()]*\)\s*{[^{}]*?)\s*%%async_marker%%;/g;
 		var returnNothingRegEx = ~/\s*return %%async_nothing%%;/g;
