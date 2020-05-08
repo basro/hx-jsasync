@@ -7,7 +7,7 @@
 	"version": "0.0.0",
 	"classPath": "src",
 	"releasenote": "Initial release.",
-	"contributors": ["basro"],
+	"contributors": ["marioc"],
 	"dependencies": {
 	}
   }
