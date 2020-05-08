@@ -15,4 +15,8 @@ class Helper {
     public extern static inline function wrapReturn<T>(value: PromiseReturnValue<T>): Promise<T> {
         return cast value;
     }
+
+    public extern static inline function makeAsync<T>(func: T): T {
+        return js.Syntax.code("async {0}", func);
+    }
 }

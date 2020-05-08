@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["js", "async"],
 	"description": "Native JavaScript async functions.",
-	"version": "0.0.0",
+	"version": "0.1.0",
 	"classPath": "src",
-	"releasenote": "Initial release.",
+	"releasenote": "Implement -D jsasync-no-markers",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}

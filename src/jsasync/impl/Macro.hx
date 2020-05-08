@@ -12,8 +12,6 @@ class Macro {
 
 	/** Implementation of JSAsync.func macro */
 	static public function asyncFuncMacro(e : Expr) {
-		registerFixOutputFile();
-
 		switch(e.expr) {
 			case EFunction(kind, f): f.expr = modifyFunctionBody(f.expr);
 			default: Context.error("Argument should be a function expression", e.pos);
@@ -39,7 +37,6 @@ class Macro {
 			}
 		}
 
-		if (foundAsync) registerFixOutputFile();
 		return fields;
 	}
 
@@ -63,18 +60,27 @@ class Macro {
 		};
 	}
 
-	/** Adds a marker at the start of a function and wraps the return expressions */
+	/** Converts a function body to turn it into an async function */
 	static function modifyFunctionBody(e:Expr) {
 		var wrappedReturns = wrapReturns(e);
 
-		var insertReturn = if ( wrappedReturns.found ) macro {} else macro return (js.Syntax.code("%%async_nothing%%"):js.lib.Promise<jsasync.Nothing>);
-
-		var result = macro {
-			js.Syntax.code("%%async_marker%%");
-			${wrappedReturns.expr};
-			${insertReturn}
-		};
-		return result;
+		return if (Context.defined("jsasync-no-markers")) {
+			var insertReturn = if ( wrappedReturns.found ) macro {} else macro return (js.Syntax.code("undefined"):js.lib.Promise<jsasync.Nothing>);
+			macro {
+				return jsasync.impl.Helper.makeAsync(function() {
+					${wrappedReturns.expr};
+					${insertReturn};
+				})();
+			};
+		}else {
+			registerFixOutputFile();
+			var insertReturn = if ( wrappedReturns.found ) macro {} else macro return (js.Syntax.code("%%async_nothing%%"):js.lib.Promise<jsasync.Nothing>);
+			macro {
+				js.Syntax.code("%%async_marker%%");
+				${wrappedReturns.expr};
+				${insertReturn};
+			};
+		}
 	}
 
 	static var fixOutputFileRegistered = false;
