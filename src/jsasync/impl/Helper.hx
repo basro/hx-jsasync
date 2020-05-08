@@ -5,7 +5,7 @@ import js.lib.Promise;
 /**
  * In javascript async functions returning a Promise<T> doesn't result in a Promise<Promise<T>>,
  * instead the promise gets awaited automatically.
- * This abstract implicit casts from T or Promise<T> achieving the same result in the Haxe tyep system.
+ * This abstract implicit casts from T or Promise<T> achieving the same result in the Haxe type system.
  */
 private abstract PromiseReturnValue<T>(Dynamic) from T from Promise<T> {}
 
