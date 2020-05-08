@@ -1,0 +1,13 @@
+{
+	"name": "jsasync",
+	"url" : "https://github.com/basro/hx-jsasync",
+	"license": "MIT",
+	"tags": ["js", "async"],
+	"description": "Native JavaScript async functions.",
+	"version": "0.0.0",
+	"classPath": "src",
+	"releasenote": "Initial release.",
+	"contributors": ["basro"],
+	"dependencies": {
+	}
+  }
