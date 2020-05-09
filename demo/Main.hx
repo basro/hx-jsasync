@@ -30,6 +30,15 @@ class Main {
 		trace(localAsyncFunction("A").await());
 		trace(localAsyncFunction("B").await());
 
+		var randomWait = JSAsync.func(function() {
+			if ( Math.random() > 0.5 ) {
+				return;
+			}
+			timer(1000).await();
+		});
+
+		randomWait().await();
+
 		var a = localAsyncFunction("C");
 		var b = localAsyncFunction("D");
 		trace( a.await() + " " + b.await() );
@@ -66,3 +75,4 @@ class Main {
 		return Json.parse(text);
 	}
 }
+
