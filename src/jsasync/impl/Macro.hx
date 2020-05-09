@@ -58,8 +58,12 @@ class Macro {
 		function mapFunc(e: Expr) {
 			return switch(e.expr) {
 				case EReturn(sub): 
-					found = true;
-					macro @:pos(e.pos) return jsasync.impl.Helper.wrapReturn(${sub.map(mapFunc)});
+					if ( sub != null ) {
+						found = true;
+						macro @:pos(e.pos) return jsasync.impl.Helper.wrapReturn(${sub.map(mapFunc)});
+					}else {
+						makeReturnNothingExpr(e.pos);
+					}
 				case EFunction(kind, f): e; // Don't modify returns inside other functions
 				default: e.map(mapFunc);
 			}
@@ -78,14 +82,17 @@ class Macro {
 		var insertReturn = if ( wrappedReturns.found ) {
 			macro @:pos(e.pos) {}
 		}else {
-			var returnCode = useMarkers()? "%%async_nothing%%" : "undefined";
-			macro @:pos(e.pos) return (js.Syntax.code($v{returnCode}):js.lib.Promise<jsasync.Nothing>);
+			makeReturnNothingExpr(e.pos, useMarkers()? "%%async_nothing%%" : "");
 		}
 
 		return macro @:pos(e.pos) {
 			${wrappedReturns.expr};
 			${insertReturn};
 		}
+	}
+
+	static function makeReturnNothingExpr(pos: Position, returnCode: String = "") {
+		return macro @:pos(pos) return (js.Syntax.code($v{returnCode}):js.lib.Promise<jsasync.Nothing>);
 	}
 
 	static function modifyMethodBody(e:Expr) {
