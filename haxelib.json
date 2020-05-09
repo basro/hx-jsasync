@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["js", "async"],
 	"description": "Native JavaScript async functions.",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"classPath": "src",
-	"releasenote": "Add support for void return statements.",
+	"releasenote": "Fix bug where JSAsync tries to fix output file even on 'display' mode.",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}
