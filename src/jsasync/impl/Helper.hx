@@ -11,12 +11,12 @@ private abstract PromiseReturnValue<T>(Dynamic) from T from Promise<T> {}
 
 class Helper {
 
-    /** JSAsync Macro will wrap all return values with this function, allowing the Haxe compiler to infer the types correctly. */
-    public extern static inline function wrapReturn<T>(value: PromiseReturnValue<T>): Promise<T> {
-        return cast value;
-    }
+	/** JSAsync Macro will wrap all return values with this function, allowing the Haxe compiler to infer the types correctly. */
+	public extern static inline function wrapReturn<T>(value: PromiseReturnValue<T>): Promise<T> {
+		return cast value;
+	}
 
-    public extern static inline function makeAsync<T>(func: T): T {
-        return js.Syntax.code("(async {0})", func);
-    }
+	public extern static inline function makeAsync<T>(func: T): T {
+		return js.Syntax.code("(async {0})", func);
+	}
 }
