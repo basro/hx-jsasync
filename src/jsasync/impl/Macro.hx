@@ -109,7 +109,7 @@ class Macro {
 
 	static var fixOutputFileRegistered = false;
 	static function registerFixOutputFile() {
-		if ( !fixOutputFileRegistered ) {
+		if ( !fixOutputFileRegistered && !Context.defined("display") ) {
 			Context.onAfterGenerate( fixOutputFile );
 			fixOutputFileRegistered = true;
 		}
