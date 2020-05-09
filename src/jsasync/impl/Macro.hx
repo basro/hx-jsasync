@@ -13,16 +13,15 @@ class Macro {
 	/** Implementation of JSAsync.func macro */
 	static public function asyncFuncMacro(e : Expr) {
 		switch(e.expr) {
-			case EFunction(kind, f): f.expr = modifyFunctionBody(f.expr);
-			default: Context.error("Argument should be a function expression", e.pos);
+			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f.expr);
+			default: Context.error("Argument should be an anonymous function expression", e.pos);
 		}
-		return e;
+		return macro @:pos(e.pos) jsasync.impl.Helper.makeAsync(${e});
 	}
 
 	/** Implementation of JSAsync.build macro */
 	static public function build():Array<Field> {
 		var fields = Context.getBuildFields();
-		var foundAsync = false;
 
 		for ( field in fields ) {
 			var m = Lambda.find(field.meta, m -> m.name == ":jsasync");
@@ -30,14 +29,18 @@ class Macro {
 			field.meta.remove(m);
 
 			switch(field.kind) {
-				case FFun(func):
-					func.expr = modifyFunctionBody(func.expr);
-					foundAsync = true;
+				case FFun(func): func.expr = modifyMethodBody(func.expr);
 				default:
 			}
 		}
 
 		return fields;
+	}
+
+	static function useMarkers() {
+		var useMarkers = !Context.defined("jsasync-no-markers");
+		if ( useMarkers ) registerFixOutputFile();
+		return useMarkers;
 	}
 
 	/** Modifies a function body so that all return expressions are wrapped by Helper.wrapReturn */
@@ -48,7 +51,7 @@ class Macro {
 			return switch(e.expr) {
 				case EReturn(sub): 
 					found = true;
-					macro return jsasync.impl.Helper.wrapReturn(${sub.map(mapFunc)});
+					macro @:pos(e.pos) return jsasync.impl.Helper.wrapReturn(${sub.map(mapFunc)});
 				case EFunction(kind, f): e; // Don't modify returns inside other functions
 				default: e.map(mapFunc);
 			}
@@ -64,22 +67,28 @@ class Macro {
 	static function modifyFunctionBody(e:Expr) {
 		var wrappedReturns = wrapReturns(e);
 
-		return if (Context.defined("jsasync-no-markers")) {
-			var insertReturn = if ( wrappedReturns.found ) macro {} else macro return (js.Syntax.code("undefined"):js.lib.Promise<jsasync.Nothing>);
-			macro {
-				return jsasync.impl.Helper.makeAsync(function() {
-					${wrappedReturns.expr};
-					${insertReturn};
-				})();
+		var insertReturn = if ( wrappedReturns.found ) {
+			macro @:pos(e.pos) {}
+		}else {
+			var returnCode = useMarkers()? "%%async_nothing%%" : "undefined";
+			macro @:pos(e.pos) return (js.Syntax.code($v{returnCode}):js.lib.Promise<jsasync.Nothing>);
+		}
+
+		return macro @:pos(e.pos) {
+			${wrappedReturns.expr};
+			${insertReturn};
+		}
+	}
+
+	static function modifyMethodBody(e:Expr) {
+		var body = modifyFunctionBody(e);
+		return if (useMarkers()) {
+			macro @:pos(e.pos) {
+				js.Syntax.code("%%async_marker%%");
+				${body}
 			};
 		}else {
-			registerFixOutputFile();
-			var insertReturn = if ( wrappedReturns.found ) macro {} else macro return (js.Syntax.code("%%async_nothing%%"):js.lib.Promise<jsasync.Nothing>);
-			macro {
-				js.Syntax.code("%%async_marker%%");
-				${wrappedReturns.expr};
-				${insertReturn};
-			};
+			macro @:pos(e.pos) return jsasync.impl.Helper.makeAsync(function() ${body})();
 		}
 	}
 
