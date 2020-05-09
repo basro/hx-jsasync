@@ -6,7 +6,7 @@
 	"description": "Native JavaScript async functions.",
 	"version": "0.1.0",
 	"classPath": "src",
-	"releasenote": "Implement -D jsasync-no-markers",
+	"releasenote": "Ironed out a bunch of bugs. Added support for -D jsasync-no-markers.",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}
