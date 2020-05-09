@@ -12,9 +12,17 @@ class Macro {
 
 	/** Implementation of JSAsync.func macro */
 	static public function asyncFuncMacro(e : Expr) {
+		// Convert FArrow into FAnonymous
+		switch(e.expr) {
+			case EFunction(FArrow, f):
+				f.expr = macro @:pos(f.expr.pos) return ${f.expr};
+				e.expr = EFunction(FAnonymous, f);
+			default:
+		}
+
 		switch(e.expr) {
 			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f.expr);
-			default: Context.error("Argument should be an anonymous function expression", e.pos);
+			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
 		return macro @:pos(e.pos) jsasync.impl.Helper.makeAsync(${e});
 	}
