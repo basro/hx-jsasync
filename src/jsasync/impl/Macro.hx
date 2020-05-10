@@ -1,6 +1,5 @@
 package jsasync.impl;
 
-import haxe.macro.TypedExprTools;
 import sys.io.File;
 import haxe.macro.Compiler;
 import haxe.macro.Context;
@@ -9,6 +8,8 @@ import haxe.macro.Expr;
 using haxe.macro.ExprTools;
 
 class Macro {
+	static var helper = Context.storeExpr(macro jsasync.impl.Helper);
+	static var jsSyntax = Context.storeExpr(macro js.Syntax);
 
 	/** Implementation of JSAsync.func macro */
 	static public function asyncFuncMacro(e : Expr) {
@@ -24,7 +25,7 @@ class Macro {
 			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f.expr);
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
-		return macro @:pos(e.pos) jsasync.impl.Helper.makeAsync(${e});
+		return macro @:pos(e.pos) ${helper}.makeAsync(${e});
 	}
 
 	/** Implementation of JSAsync.build macro */
@@ -60,7 +61,7 @@ class Macro {
 				case EReturn(sub): 
 					if ( sub != null ) {
 						found = true;
-						macro @:pos(e.pos) return jsasync.impl.Helper.wrapReturn(${sub.map(mapFunc)});
+						macro @:pos(e.pos) return ${helper}.wrapReturn(${sub.map(mapFunc)});
 					}else {
 						makeReturnNothingExpr(e.pos);
 					}
@@ -92,18 +93,18 @@ class Macro {
 	}
 
 	static function makeReturnNothingExpr(pos: Position, returnCode: String = "") {
-		return macro @:pos(pos) return (js.Syntax.code($v{returnCode}):js.lib.Promise<jsasync.Nothing>);
+		return macro @:pos(pos) return (${jsSyntax}.code($v{returnCode}):js.lib.Promise<jsasync.Nothing>);
 	}
 
 	static function modifyMethodBody(e:Expr) {
 		var body = modifyFunctionBody(e);
 		return if (useMarkers()) {
 			macro @:pos(e.pos) {
-				js.Syntax.code("%%async_marker%%");
+				${jsSyntax}.code("%%async_marker%%");
 				${body}
 			};
 		}else {
-			macro @:pos(e.pos) return jsasync.impl.Helper.makeAsync(function() ${body})();
+			macro @:pos(e.pos) return ${helper}.makeAsync(function() ${body})();
 		}
 	}
 
