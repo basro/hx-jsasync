@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["js", "async"],
 	"description": "Native JavaScript async functions.",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"classPath": "src",
-	"releasenote": "Fix bug where JSAsync tries to fix output file even on 'display' mode.",
+	"releasenote": "More bug fixes.",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}
