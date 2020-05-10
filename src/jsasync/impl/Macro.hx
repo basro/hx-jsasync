@@ -1,5 +1,6 @@
 package jsasync.impl;
 
+#if macro
 import sys.io.File;
 import haxe.macro.Compiler;
 import haxe.macro.Context;
@@ -131,3 +132,4 @@ class Macro {
 		File.saveContent(output, outputContent);
 	}
 }
+#end
