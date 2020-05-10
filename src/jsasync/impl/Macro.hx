@@ -104,7 +104,7 @@ class Macro {
 	}
 
 	static function makeReturnNothingExpr(pos: Position, returnCode: String = "") {
-		return macro @:pos(pos) return (${jsSyntax}.code($v{returnCode}):js.lib.Promise<jsasync.Nothing>);
+		return macro @:pos(pos) return ${helper}.makeNothingPromise(${jsSyntax}.code($v{returnCode}));
 	}
 
 	static function modifyMethodBody(e:Expr) {
