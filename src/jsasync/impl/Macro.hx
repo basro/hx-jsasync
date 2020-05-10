@@ -31,6 +31,7 @@ class Macro {
 
 	/** Implementation of JSAsync.build macro */
 	static public function build():Array<Field> {
+		if (Context.defined("display")) return null;
 		var fields = Context.getBuildFields();
 
 		for ( field in fields ) {
