@@ -10,6 +10,7 @@ using haxe.macro.ExprTools;
 
 class Macro {
 	static var helper = Context.storeExpr(macro jsasync.impl.Helper);
+	static var jsasyncClass = Context.storeExpr(macro jsasync.JSAsync);
 	static var jsSyntax = Context.storeExpr(macro js.Syntax);
 
 	/** Implementation of JSAsync.func macro */
@@ -31,7 +32,6 @@ class Macro {
 
 	/** Implementation of JSAsync.build macro */
 	static public function build():Array<Field> {
-		if (Context.defined("display")) return null;
 		var fields = Context.getBuildFields();
 
 		for ( field in fields ) {
@@ -40,7 +40,16 @@ class Macro {
 			field.meta.remove(m);
 
 			switch(field.kind) {
-				case FFun(func): func.expr = modifyMethodBody(func.expr);
+				case FFun(func):
+					if ( Context.defined("display") ) {
+						if ( func.ret == null ) {
+							func.expr = macro return ${jsasyncClass}.func(function() {
+								${func.expr}
+							})();
+						}
+					}else {
+						func.expr = modifyMethodBody(func.expr);
+					}
 				default:
 			}
 		}
