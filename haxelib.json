@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["js", "async"],
 	"description": "Native JavaScript async functions.",
-	"version": "0.2.3",
+	"version": "0.2.4",
 	"classPath": "src",
-	"releasenote": "Working async method completion.",
+	"releasenote": "Fix some compilation server problems.",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}
