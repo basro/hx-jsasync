@@ -9,9 +9,9 @@ import haxe.macro.Expr;
 using haxe.macro.ExprTools;
 
 class Macro {
-	static var helper = Context.storeExpr(macro jsasync.impl.Helper);
-	static var jsasyncClass = Context.storeExpr(macro jsasync.JSAsync);
-	static var jsSyntax = Context.storeExpr(macro js.Syntax);
+	static var helper = macro jsasync.impl.Helper;
+	static var jsasyncClass = macro jsasync.JSAsync;
+	static var jsSyntax = macro js.Syntax;
 
 	/** Implementation of JSAsync.func macro */
 	static public function asyncFuncMacro(e : Expr) {
