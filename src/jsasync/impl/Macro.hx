@@ -32,12 +32,17 @@ class Macro {
 
 	/** Implementation of JSAsync.build macro */
 	static public function build():Array<Field> {
+		var c = Context.getLocalClass();
+		if ( c == null ) return null;
+		var c = c.get();
+		if ( c.meta.has(":jsasync_processed") ) return null;
+		c.meta.add(":jsasync_processed", [], Context.currentPos());
+
 		var fields = Context.getBuildFields();
 
 		for ( field in fields ) {
 			var m = Lambda.find(field.meta, m -> m.name == ":jsasync");
 			if ( m == null ) continue;
-			field.meta.remove(m);
 
 			switch(field.kind) {
 				case FFun(func):
