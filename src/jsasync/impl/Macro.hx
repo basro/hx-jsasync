@@ -69,7 +69,7 @@ class Macro {
 				case EReturn(sub): 
 					if ( sub != null ) {
 						found = true;
-						macro @:pos(e.pos) return ${helper}.wrapReturn(${sub.map(mapFunc)});
+						macro @:pos(p(e.pos)) return ${helper}.wrapReturn(${sub.map(mapFunc)});
 					}else {
 						makeReturnNothingExpr(e.pos);
 					}
@@ -84,12 +84,19 @@ class Macro {
 		};
 	}
 
+	/** For some reason using @:pos during display tends to break completion, this is a work around for that.
+		It's likely that this is a bug in the haxe compiler.
+		TODO: try to make smaller code sample that reproduces this bug. */
+	static function p(pos:Position) {
+		return Context.defined("display")? Context.currentPos() : pos;
+	}
+
 	/** Converts a function body to turn it into an async function */
 	static function modifyFunctionBody(e:Expr) {
 		var wrappedReturns = wrapReturns(e);
 
 		var insertReturn = if ( wrappedReturns.found ) {
-			macro @:pos(e.pos) {}
+			macro @:pos(p(e.pos)) {}
 		}else {
 			makeReturnNothingExpr(e.pos, useMarkers()? "%%async_nothing%%" : "");
 		}
@@ -101,7 +108,7 @@ class Macro {
 	}
 
 	static function makeReturnNothingExpr(pos: Position, returnCode: String = "") {
-		return macro @:pos(pos) return ${helper}.makeNothingPromise(${jsSyntax}.code($v{returnCode}));
+		return macro @:pos(p(pos)) return ${helper}.makeNothingPromise(${jsSyntax}.code($v{returnCode}));
 	}
 
 	static function modifyMethodBody(e:Expr) {
