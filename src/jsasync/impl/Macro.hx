@@ -18,7 +18,7 @@ class Macro {
 		// Convert FArrow into FAnonymous
 		switch(e.expr) {
 			case EFunction(FArrow, f):
-				f.expr = macro @:pos(f.expr.pos) return ${f.expr};
+				f.expr = macro return ${f.expr};
 				e.expr = EFunction(FAnonymous, f);
 			default:
 		}
@@ -27,7 +27,7 @@ class Macro {
 			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f.expr);
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
-		return macro @:pos(e.pos) ${helper}.makeAsync(${e});
+		return macro ${helper}.makeAsync(${e});
 	}
 
 	/** Implementation of JSAsync.build macro */
@@ -46,15 +46,7 @@ class Macro {
 
 			switch(field.kind) {
 				case FFun(func):
-					if ( Context.defined("display") ) {
-						if ( func.ret == null ) {
-							func.expr = macro return ${jsasyncClass}.func(function() {
-								${func.expr}
-							})();
-						}
-					}else {
-						func.expr = modifyMethodBody(func.expr);
-					}
+					func.expr = modifyMethodBody(func.expr);
 				default:
 			}
 		}
@@ -102,7 +94,7 @@ class Macro {
 			makeReturnNothingExpr(e.pos, useMarkers()? "%%async_nothing%%" : "");
 		}
 
-		return macro @:pos(e.pos) {
+		return macro {
 			${wrappedReturns.expr};
 			${insertReturn};
 		}
@@ -115,12 +107,12 @@ class Macro {
 	static function modifyMethodBody(e:Expr) {
 		var body = modifyFunctionBody(e);
 		return if (useMarkers()) {
-			macro @:pos(e.pos) {
+			macro {
 				${jsSyntax}.code("%%async_marker%%");
 				${body}
 			};
 		}else {
-			macro @:pos(e.pos) return ${helper}.makeAsync(function() ${body})();
+			macro return ${helper}.makeAsync(function() ${body})();
 		}
 	}
 
