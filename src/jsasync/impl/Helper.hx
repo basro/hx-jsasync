@@ -7,7 +7,7 @@ import js.lib.Promise;
  * instead the promise gets awaited automatically.
  * This abstract implicit casts from T or Promise<T> achieving the same result in the Haxe type system.
  */
-private abstract PromiseReturnValue<T>(Dynamic) from T from Promise<T> {}
+abstract PromiseReturnValue<T>(Dynamic) from T from Promise<T> {}
 
 class Helper {
 

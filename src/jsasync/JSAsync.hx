@@ -9,6 +9,11 @@ class JSAsync {
 		return jsasync.impl.Macro.asyncFuncMacro(e);
 	}
 
+	@:noCompletion
+	public static macro function method(e:Expr) {
+		return jsasync.impl.Macro.asyncMethodMacro(e);
+	}
+
 	#if macro
 	/**
 		This macro can be used with `@:build()` compiler metadata to add support for `@:jsasync`
