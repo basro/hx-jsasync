@@ -5,13 +5,29 @@ import sys.io.File;
 import haxe.macro.Compiler;
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import haxe.macro.Type;
 
+using  haxe.macro.TypeTools;
+using haxe.macro.ComplexTypeTools;
 using haxe.macro.ExprTools;
 
 class Macro {
 	static var helper = macro jsasync.impl.Helper;
 	static var jsasyncClass = macro jsasync.JSAsync;
 	static var jsSyntax = macro js.Syntax;
+
+	/*static public function getID(t:Type, ?reduced = true)
+		return
+		  if (reduced)
+			getID(reduce(t), false);
+		  else
+			switch (t) {
+			  case TAbstract(t, _): t.toString();
+			  case TInst(t, _): t.toString();
+			  case TEnum(t, _): t.toString();
+			  case TType(t, _): t.toString();
+			  default: null;
+			}*/
 
 	/** Implementation of JSAsync.func macro */
 	static public function asyncFuncMacro(e : Expr) {
@@ -24,7 +40,25 @@ class Macro {
 		}
 
 		switch(e.expr) {
-			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f.expr);
+			case EFunction(FAnonymous, f):
+				var retType = if ( f.ret != null ) f.ret else {
+					var te = Context.typeExpr(e);
+					switch te.t {
+						case TFun(args, ret): ret.toComplexType();
+						default: Context.error("JSAsync: Function has unknown type", e.pos);
+					}
+				}
+
+				var types = switch retType {
+					case TPath({name: "Promise", pack: ["js", "lib"], params: [TPType(innerType)] }):
+						{promise: retType, inner: innerType};
+					default:
+						{
+							promise: TPath({name:"Promise", pack: ["js", "lib"], params: [TPType(retType)]}),
+							inner: retType
+						}
+				}
+				f.expr = modifyFunctionBody(f.expr);
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
 
