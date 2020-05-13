@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["js", "async"],
 	"description": "Native JavaScript async functions.",
-	"version": "0.2.5",
+	"version": "0.2.6",
 	"classPath": "src",
-	"releasenote": "Detect --no-output and improvements to completion.",
+	"releasenote": "Fix cached builds not running the fix markers pass.",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}
