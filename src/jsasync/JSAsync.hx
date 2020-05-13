@@ -16,7 +16,7 @@ class JSAsync {
 
 		Alternatively you can use the IJSAsync interface.
 	*/
-	static macro function build(packagePath:String = "") : Array<Field> {
+	static macro function build() : Array<Field> {
 		return jsasync.impl.Macro.build();
 	}
 

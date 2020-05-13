@@ -27,6 +27,7 @@ class Macro {
 			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f.expr);
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
+
 		return macro ${helper}.makeAsync(${e});
 	}
 
@@ -55,9 +56,7 @@ class Macro {
 	}
 
 	static function useMarkers() {
-		var useMarkers = !Context.defined("jsasync-no-markers");
-		if ( useMarkers ) registerFixOutputFile();
-		return useMarkers;
+		return !Context.defined("jsasync-no-markers");
 	}
 
 	/** Modifies a function body so that all return expressions are wrapped by Helper.wrapReturn */
@@ -123,11 +122,9 @@ class Macro {
 		}
 	}
 
-	static var fixOutputFileRegistered = false;
-	static function registerFixOutputFile() {
-		if ( !fixOutputFileRegistered && !Context.defined("display") ) {
+	public static function init() {
+		if ( !Context.defined("display") ) {
 			Context.onAfterGenerate( fixOutputFile );
-			fixOutputFileRegistered = true;
 		}
 	}
 

@@ -1,3 +1,4 @@
+extraParams.hxml
 -cp src
 -main demo.Main
 -js bin/main.js
