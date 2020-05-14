@@ -25,7 +25,7 @@ class Macro {
 		// Convert FArrow into FAnonymous
 		switch(e.expr) {
 			case EFunction(FArrow, f):
-				f.expr = macro @:pos(p(e.pos)) return ${f.expr};
+				f.expr = macro @:pos(e.pos) return ${f.expr};
 				e.expr = EFunction(FAnonymous, f);
 			default:
 		}
@@ -35,7 +35,7 @@ class Macro {
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
 
-		return macro ${helper}.makeAsync(${e});
+		return macro @:pos(e.pos) ${helper}.makeAsync(${e});
 	}
 
 	/**
@@ -48,12 +48,12 @@ class Macro {
 			case EFunction(FAnonymous, f):
 				var body = modifyFunctionBody(f, e.pos);
 				if ( useMarkers() )
-					macro @:pos(p(e.pos)) {
+					macro @:pos(e.pos) {
 						js.Syntax.code("%%async_marker%%");
 						${body};
 					}
 				else
-					macro @:pos(p(e.pos)) return jsasync.impl.Helper.makeAsync(function() ${body})();
+					macro @:pos(e.pos) return jsasync.impl.Helper.makeAsync(function() ${body})();
 		}
 	}
 
@@ -141,7 +141,7 @@ class Macro {
 				found = true;
 				var innerCT = types.inner;
 				var promiseCT = types.promise;
-				macro @:pos(p(pos)) return (cast (${re} : $innerCT) : $promiseCT);
+				macro @:pos(pos) return (cast (${re} : $innerCT) : $promiseCT);
 			}
 			else
 				makeReturnNothingExpr(pos, false)
@@ -153,19 +153,12 @@ class Macro {
 		};
 	}
 
-	/** For some reason using @:pos during display tends to break completion, this is a work around for that.
-		It's likely that this is a bug in the haxe compiler.
-		TODO: try to make a smaller code sample that reproduces this bug. */
-	static function p(pos:Position) {
-		return pos; //Context.defined("display")? Context.currentPos() : pos;
-	}
-
 	/** Converts a function body to turn it into an async function */
 	static function modifyFunctionBody(f:Function, pos: Position) : Expr {
 		function retMapper(re:Null<Expr>, pos:Position) {
 			return
-				if ( re == null ) macro @:pos(p(pos)) return;
-				else macro @:pos(p(pos)) return jsasync.impl.Helper.unwrapPromiseType(${re});
+				if ( re == null ) macro @:pos(pos) return;
+				else macro @:pos(pos) return jsasync.impl.Helper.unwrapPromiseType(${re});
 		}
 
 		var f : Function = {
@@ -184,7 +177,7 @@ class Macro {
 	
 	static function makeReturnNothingExpr(pos: Position, isLast : Bool) : Expr {
 		var valueExpr = ( useMarkers() && isLast ) ? "%%async_nothing%%" : "";
-		return macro @:pos(p(pos)) return (js.Syntax.code($v{valueExpr}) : js.lib.Promise<jsasync.Nothing>);
+		return macro @:pos(pos) return (js.Syntax.code($v{valueExpr}) : js.lib.Promise<jsasync.Nothing>);
 	}
 
 	public static function init() {
