@@ -46,10 +46,14 @@ class Macro {
 		return switch e.expr {
 			default: Context.error("Invalid expression", e.pos);
 			case EFunction(FAnonymous, f):
-				macro {
-					js.Syntax.code("%%async_marker%%");
-					${modifyFunctionBody(f, e.pos)};
-				}
+				var body = modifyFunctionBody(f, e.pos);
+				if ( useMarkers() )
+					macro @:pos(p(e.pos)) {
+						js.Syntax.code("%%async_marker%%");
+						${body};
+					}
+				else
+					macro @:pos(p(e.pos)) return jsasync.impl.Helper.makeAsync(function() ${body})();
 		}
 	}
 
@@ -194,7 +198,7 @@ class Macro {
 		Adds "async" to functions marked with %%async_marker%% and removes "return %%async_nothing%%;"
 	*/
 	static function fixOutputFile() {
-		if ( Context.defined("jsasync-no-fix-pass") || Sys.args().indexOf("--no-output") != -1 ) return;
+		if ( Context.defined("jsasync-no-fix-pass") || Context.defined("jsasync-no-markers") || Sys.args().indexOf("--no-output") != -1 ) return;
 		var output = Compiler.getOutput();
 		var markerRegEx = ~/((?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^()]*\)\s*{[^{}]*?)\s*%%async_marker%%;/g;
 		var returnNothingRegEx = ~/\s*return %%async_nothing%%;/g;
