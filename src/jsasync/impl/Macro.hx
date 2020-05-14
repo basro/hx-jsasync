@@ -135,7 +135,7 @@ class Macro {
 		return mapper(e);
 	}
 
-	/** Modifies a function body so that all return expressions are wrapped by Helper.wrapReturn */
+	/** Modifies a function body so that all return expressions are of type js.lib.Promise */
 	static function wrapReturns(e : Expr, types : PromiseTypes) {
 		var found = false;
 		var expr = mapReturns(e, (re, pos) ->
