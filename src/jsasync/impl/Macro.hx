@@ -31,9 +31,7 @@ class Macro {
 		}
 
 		switch(e.expr) {
-			case EFunction(FAnonymous, f):
-				var types = getPromiseTypes(f,e.pos);
-				f.expr = modifyFunctionBody(f.expr, types);
+			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f, e.pos);
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
 
@@ -48,23 +46,9 @@ class Macro {
 		return switch e.expr {
 			default: Context.error("Invalid expression", e.pos);
 			case EFunction(FAnonymous, f):
-				function retMapper(re:Null<Expr>, pos:Position) {
-					return
-						if ( re == null ) macro return;
-						else macro @:pos(p(pos)) return jsasync.impl.Helper.unwrapPromiseType(${re});
-				}
-	
-				var f : Function = {
-					args: f.args,
-					ret: f.ret,
-					expr: mapReturns(f.expr, retMapper),
-					params: f.params
-				}
-
-				var types = getPromiseTypes(f,e.pos);
 				macro {
 					js.Syntax.code("%%async_marker%%");
-					${modifyFunctionBody(f.expr, types)};
+					${modifyFunctionBody(f, e.pos)};
 				}
 		}
 	}
@@ -169,14 +153,28 @@ class Macro {
 		It's likely that this is a bug in the haxe compiler.
 		TODO: try to make a smaller code sample that reproduces this bug. */
 	static function p(pos:Position) {
-		return Context.defined("display")? Context.currentPos() : pos;
+		return pos; //Context.defined("display")? Context.currentPos() : pos;
 	}
 
 	/** Converts a function body to turn it into an async function */
-	static function modifyFunctionBody(e:Expr, types: PromiseTypes) : Expr {
-		var wrappedReturns = wrapReturns(e, types);
+	static function modifyFunctionBody(f:Function, pos: Position) : Expr {
+		function retMapper(re:Null<Expr>, pos:Position) {
+			return
+				if ( re == null ) macro @:pos(p(pos)) return;
+				else macro @:pos(p(pos)) return jsasync.impl.Helper.unwrapPromiseType(${re});
+		}
+
+		var f : Function = {
+			args: f.args,
+			ret: f.ret,
+			expr: mapReturns(f.expr, retMapper),
+			params: f.params
+		}
+		var types = getPromiseTypes(f,pos);
+
+		var wrappedReturns = wrapReturns(f.expr, types);
 		var exprs = [wrappedReturns.expr];
-		if ( !wrappedReturns.found ) exprs.push(makeReturnNothingExpr(e.pos, true));
+		if ( !wrappedReturns.found ) exprs.push(makeReturnNothingExpr(pos, true));
 		return macro $b{exprs}
 	}
 	
