@@ -25,7 +25,7 @@ class Macro {
 		// Convert FArrow into FAnonymous
 		switch(e.expr) {
 			case EFunction(FArrow, f):
-				f.expr = macro return ${f.expr};
+				f.expr = macro @:pos(p(e.pos)) return ${f.expr};
 				e.expr = EFunction(FAnonymous, f);
 			default:
 		}
