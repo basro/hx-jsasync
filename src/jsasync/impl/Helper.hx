@@ -1,5 +1,7 @@
 package jsasync.impl;
 
+import haxe.macro.Expr;
+#if !macro
 import js.lib.Promise;
 
 /**
@@ -8,17 +10,20 @@ import js.lib.Promise;
  * This abstract implicit casts from T or Promise<T> achieving the same result in the Haxe type system.
  */
 abstract PromiseReturnValue<T>(Dynamic) from T from Promise<T> {}
+#end
 
 class Helper {
+	#if !macro
 	public extern static inline function makeAsync<T>(func: T): T {
 		return js.Syntax.code("(async {0})", func);
 	}
 
-	public extern static inline function makeNothingPromise(value:Any) : Promise<Nothing> {
-		return value;
-	}
-
 	public extern static inline function unwrapPromiseType<T>(value: PromiseReturnValue<T>) : T {
 		return cast value;
+	}
+	#end
+
+	public static macro function method(e:Expr) {
+		return jsasync.impl.Macro.asyncMethodMacro(e);
 	}
 }

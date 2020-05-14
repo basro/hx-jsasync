@@ -5,7 +5,6 @@ import sys.io.File;
 import haxe.macro.Compiler;
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.macro.Type;
 
 using haxe.macro.TypeTools;
 using haxe.macro.ComplexTypeTools;
@@ -41,7 +40,10 @@ class Macro {
 		return macro ${helper}.makeAsync(${e});
 	}
 
-	/** Implementation of JSAsync.method macro */
+	/**
+		Implementation of Helper.method macro
+		Used by JSAsync build macro to modify method bodies.
+	*/
 	static public function asyncMethodMacro(e : Expr) {
 		return switch e.expr {
 			default: Context.error("Invalid expression", e.pos);
@@ -67,6 +69,9 @@ class Macro {
 		}
 	}
 
+	/**
+		Figure out the Promise type a function
+	*/
 	static function getPromiseTypes(f:Function, pos: Position) {
 		var retType = if ( f.ret != null ) {
 			switch f.ret.toType() {
@@ -117,7 +122,7 @@ class Macro {
 			switch(field.kind) {
 				case FFun(func):
 					var funcExpr = {expr: EFunction(FAnonymous, {args: [], ret:func.ret, expr: func.expr} ), pos: field.pos}
-					func.expr = macro jsasync.JSAsync.method(${funcExpr});
+					func.expr = macro jsasync.impl.Helper.method(${funcExpr});
 				default:
 			}
 		}
@@ -128,7 +133,6 @@ class Macro {
 	static function useMarkers() {
 		return !Context.defined("jsasync-no-markers");
 	}
-
 
 	static function mapReturns(e: Expr, returnMapper: (re: Null<Expr>, pos: Position) -> Expr) : Expr {
 		function mapper(e: Expr)
@@ -163,29 +167,22 @@ class Macro {
 
 	/** For some reason using @:pos during display tends to break completion, this is a work around for that.
 		It's likely that this is a bug in the haxe compiler.
-		TODO: try to make smaller code sample that reproduces this bug. */
+		TODO: try to make a smaller code sample that reproduces this bug. */
 	static function p(pos:Position) {
 		return Context.defined("display")? Context.currentPos() : pos;
 	}
 
 	/** Converts a function body to turn it into an async function */
-	static function modifyFunctionBody(e:Expr, types: PromiseTypes) {
+	static function modifyFunctionBody(e:Expr, types: PromiseTypes) : Expr {
 		var wrappedReturns = wrapReturns(e, types);
-		
-		var insertReturn = if ( wrappedReturns.found ) {
-			macro @:pos(p(e.pos)) {}
-		}else {
-			macro @:pos(p(e.pos)) return (null : js.lib.Promise<jsasync.Nothing>);//makeReturnNothingExpr(e.pos, useMarkers()? "%%async_nothing%%" : "");
-		}
-
-		return macro {
-			${wrappedReturns.expr};
-			${insertReturn};
-		}
+		var exprs = [wrappedReturns.expr];
+		if ( !wrappedReturns.found ) exprs.push(makeReturnNothingExpr(e.pos, true));
+		return macro $b{exprs}
 	}
-
-	static function makeReturnNothingExpr(pos: Position, returnCode: String = "") {
-		return macro @:pos(p(pos)) return ${helper}.makeNothingPromise(${jsSyntax}.code($v{returnCode}));
+	
+	static function makeReturnNothingExpr(pos: Position, isLast : Bool) : Expr {
+		var valueExpr = ( useMarkers() && isLast ) ? "%%async_nothing%%" : "";
+		return macro @:pos(p(pos)) return (js.Syntax.code($v{valueExpr}) : js.lib.Promise<jsasync.Nothing>);
 	}
 
 	public static function init() {
