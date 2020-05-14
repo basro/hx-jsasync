@@ -88,11 +88,8 @@ class Macro {
 			}
 		}
 
-		if ( retType == null ) {
-			Context.error("JSAsync: Function has unknown type", pos);
-		}
-
 		return switch retType {
+			case null: Context.error("JSAsync: Function has unknown type", pos);
 			case TPath({name: "Promise", pack: ["js", "lib"], params: [TPType(innerType)] }):
 				{promise: retType, inner: innerType};
 			default:
