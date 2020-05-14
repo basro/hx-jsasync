@@ -117,6 +117,12 @@ class MyClass implements IJSAsync {
 }
 ```
 
+### Using await outside of async functions
+
+Even though this is an error and will produce invalid JS code at this time JSAsync is not able to detect this. Future versions might improve on this.
+
+On the bright side, this is a syntax error in javascript so it wont cause silent bugs in your js code.
+
 ## Typing
 
 In most cases JSAsync is able to infer the return type of your async function automatically.
