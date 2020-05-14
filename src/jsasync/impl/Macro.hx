@@ -140,7 +140,7 @@ class Macro {
 				macro @:pos(p(pos)) return (cast (${re} : $innerCT) : $promiseCT);
 			}
 			else
-				macro @:pos(p(pos)) return (null : js.lib.Promise<jsasync.Nothing>)
+				makeReturnNothingExpr(pos, false)
 		);
 
 		return {
