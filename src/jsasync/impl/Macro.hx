@@ -46,6 +46,19 @@ class Macro {
 		return switch e.expr {
 			default: Context.error("Invalid expression", e.pos);
 			case EFunction(FAnonymous, f):
+				function retMapper(re:Null<Expr>, pos:Position) {
+					return
+						if ( re == null ) macro return;
+						else macro @:pos(p(pos)) return jsasync.impl.Helper.unwrapPromiseType(${re});
+				}
+	
+				var f : Function = {
+					args: f.args,
+					ret: f.ret,
+					expr: mapReturns(f.expr, retMapper),
+					params: f.params
+				}
+
 				var types = getPromiseTypes(f,e.pos);
 				macro {
 					js.Syntax.code("%%async_marker%%");
@@ -119,28 +132,34 @@ class Macro {
 		return !Context.defined("jsasync-no-markers");
 	}
 
+
+	static function mapReturns(e: Expr, returnMapper: (re: Null<Expr>, pos: Position) -> Expr) : Expr {
+		function mapper(e: Expr)
+			return switch e.expr {
+				case EReturn(sub): returnMapper( sub == null? null : sub.map(mapper), e.pos );
+				case EFunction(kind, f): e;
+				default: e.map(mapper);
+			}
+
+		return mapper(e);
+	}
+
 	/** Modifies a function body so that all return expressions are wrapped by Helper.wrapReturn */
 	static function wrapReturns(e : Expr, types : PromiseTypes) {
 		var found = false;
-
-		function mapFunc(e: Expr) {
-			return switch(e.expr) {
-				case EReturn(sub): 
-					if ( sub != null ) {
-						found = true;
-						var innerCT = types.inner;
-						var promiseCT = types.promise;
-						macro @:pos(p(e.pos)) return (cast (${sub.map(mapFunc)} : $innerCT) : $promiseCT);
-					}else {
-						macro @:pos(p(e.pos)) return (null : js.lib.Promise<jsasync.Nothing>);
-					}
-				case EFunction(kind, f): e; // Don't modify returns inside other functions
-				default: e.map(mapFunc);
+		var expr = mapReturns(e, (re, pos) ->
+			if ( re != null ) {
+				found = true;
+				var innerCT = types.inner;
+				var promiseCT = types.promise;
+				macro @:pos(p(pos)) return (cast (${re} : $innerCT) : $promiseCT);
 			}
-		}
+			else
+				macro @:pos(p(pos)) return (null : js.lib.Promise<jsasync.Nothing>)
+		);
 
 		return {
-			expr: mapFunc(e),
+			expr: expr,
 			found: found
 		};
 	}
