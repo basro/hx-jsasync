@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["js", "async"],
 	"description": "Native JavaScript async functions.",
-	"version": "0.2.6",
+	"version": "1.0.0",
 	"classPath": "src",
-	"releasenote": "Fix cached builds not running the fix markers pass.",
+	"releasenote": "Massively improved type inference by actively typing in the macros.",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}
