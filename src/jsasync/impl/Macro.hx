@@ -6,7 +6,14 @@ import haxe.macro.Compiler;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 
+using haxe.macro.TypeTools;
+using haxe.macro.ComplexTypeTools;
 using haxe.macro.ExprTools;
+
+typedef PromiseTypes = {
+	promise: ComplexType,
+	inner: ComplexType
+}
 
 class Macro {
 	static var helper = macro jsasync.impl.Helper;
@@ -18,17 +25,72 @@ class Macro {
 		// Convert FArrow into FAnonymous
 		switch(e.expr) {
 			case EFunction(FArrow, f):
-				f.expr = macro return ${f.expr};
+				f.expr = macro @:pos(p(e.pos)) return ${f.expr};
 				e.expr = EFunction(FAnonymous, f);
 			default:
 		}
 
 		switch(e.expr) {
-			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f.expr);
+			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f, e.pos);
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
 
 		return macro ${helper}.makeAsync(${e});
+	}
+
+	/**
+		Implementation of Helper.method macro
+		Used by JSAsync build macro to modify method bodies.
+	*/
+	static public function asyncMethodMacro(e : Expr) {
+		return switch e.expr {
+			default: Context.error("Invalid expression", e.pos);
+			case EFunction(FAnonymous, f):
+				var body = modifyFunctionBody(f, e.pos);
+				if ( useMarkers() )
+					macro @:pos(p(e.pos)) {
+						js.Syntax.code("%%async_marker%%");
+						${body};
+					}
+				else
+					macro @:pos(p(e.pos)) return jsasync.impl.Helper.makeAsync(function() ${body})();
+		}
+	}
+
+	/**
+		Figure out the Promise type a function
+	*/
+	static function getPromiseTypes(f:Function, pos: Position) {
+		var retType = if ( f.ret != null ) {
+			switch f.ret.toType() {
+				case null: null;
+				case t: t.follow().toComplexType();
+			}
+		}else {
+			var te =
+			try {
+				var funcExpr = {expr: EFunction(FAnonymous,f), pos:pos};
+				Context.typeExpr(macro {var jsasync_dummy_func = $funcExpr; jsasync_dummy_func;});
+			}catch( error : haxe.macro.Error ) {
+				Context.error("JSASync: " + error.message, error.pos);
+			}
+
+			switch( te.t ) {
+				case TFun(_, ret): ret.follow().toComplexType();
+				default: null;
+			}
+		}
+
+		return switch retType {
+			case null: Context.error("JSAsync: Function has unknown type", pos);
+			case TPath({name: "Promise", pack: ["js", "lib"], params: [TPType(innerType)] }):
+				{promise: retType, inner: innerType};
+			default:
+				{
+					promise: TPath({name:"Promise", pack: ["js", "lib"], params: [TPType(retType)]}),
+					inner: retType
+				}
+		}
 	}
 
 	/** Implementation of JSAsync.build macro */
@@ -47,7 +109,8 @@ class Macro {
 
 			switch(field.kind) {
 				case FFun(func):
-					func.expr = modifyMethodBody(func.expr);
+					var funcExpr = {expr: EFunction(FAnonymous, {args: [], ret:func.ret, expr: func.expr} ), pos: field.pos}
+					func.expr = macro jsasync.impl.Helper.method(${funcExpr});
 				default:
 			}
 		}
@@ -59,67 +122,69 @@ class Macro {
 		return !Context.defined("jsasync-no-markers");
 	}
 
-	/** Modifies a function body so that all return expressions are wrapped by Helper.wrapReturn */
-	static function wrapReturns(e : Expr) {
-		var found = false;
-
-		function mapFunc(e: Expr) {
-			return switch(e.expr) {
-				case EReturn(sub): 
-					if ( sub != null ) {
-						found = true;
-						macro @:pos(p(e.pos)) return ${helper}.wrapReturn(${sub.map(mapFunc)});
-					}else {
-						makeReturnNothingExpr(e.pos);
-					}
-				case EFunction(kind, f): e; // Don't modify returns inside other functions
-				default: e.map(mapFunc);
+	static function mapReturns(e: Expr, returnMapper: (re: Null<Expr>, pos: Position) -> Expr) : Expr {
+		function mapper(e: Expr)
+			return switch e.expr {
+				case EReturn(sub): returnMapper( sub == null? null : sub.map(mapper), e.pos );
+				case EFunction(kind, f): e;
+				default: e.map(mapper);
 			}
-		}
+
+		return mapper(e);
+	}
+
+	/** Modifies a function body so that all return expressions are wrapped by Helper.wrapReturn */
+	static function wrapReturns(e : Expr, types : PromiseTypes) {
+		var found = false;
+		var expr = mapReturns(e, (re, pos) ->
+			if ( re != null ) {
+				found = true;
+				var innerCT = types.inner;
+				var promiseCT = types.promise;
+				macro @:pos(p(pos)) return (cast (${re} : $innerCT) : $promiseCT);
+			}
+			else
+				makeReturnNothingExpr(pos, false)
+		);
 
 		return {
-			expr: mapFunc(e),
+			expr: expr,
 			found: found
 		};
 	}
 
 	/** For some reason using @:pos during display tends to break completion, this is a work around for that.
 		It's likely that this is a bug in the haxe compiler.
-		TODO: try to make smaller code sample that reproduces this bug. */
+		TODO: try to make a smaller code sample that reproduces this bug. */
 	static function p(pos:Position) {
-		return Context.defined("display")? Context.currentPos() : pos;
+		return pos; //Context.defined("display")? Context.currentPos() : pos;
 	}
 
 	/** Converts a function body to turn it into an async function */
-	static function modifyFunctionBody(e:Expr) {
-		var wrappedReturns = wrapReturns(e);
-
-		var insertReturn = if ( wrappedReturns.found ) {
-			macro @:pos(p(e.pos)) {}
-		}else {
-			makeReturnNothingExpr(e.pos, useMarkers()? "%%async_nothing%%" : "");
+	static function modifyFunctionBody(f:Function, pos: Position) : Expr {
+		function retMapper(re:Null<Expr>, pos:Position) {
+			return
+				if ( re == null ) macro @:pos(p(pos)) return;
+				else macro @:pos(p(pos)) return jsasync.impl.Helper.unwrapPromiseType(${re});
 		}
 
-		return macro {
-			${wrappedReturns.expr};
-			${insertReturn};
+		var f : Function = {
+			args: f.args,
+			ret: f.ret,
+			expr: mapReturns(f.expr, retMapper),
+			params: f.params
 		}
+		var types = getPromiseTypes(f,pos);
+
+		var wrappedReturns = wrapReturns(f.expr, types);
+		var exprs = [wrappedReturns.expr];
+		if ( !wrappedReturns.found ) exprs.push(makeReturnNothingExpr(pos, true));
+		return macro $b{exprs}
 	}
-
-	static function makeReturnNothingExpr(pos: Position, returnCode: String = "") {
-		return macro @:pos(p(pos)) return ${helper}.makeNothingPromise(${jsSyntax}.code($v{returnCode}));
-	}
-
-	static function modifyMethodBody(e:Expr) {
-		var body = modifyFunctionBody(e);
-		return if (useMarkers()) {
-			macro {
-				${jsSyntax}.code("%%async_marker%%");
-				${body}
-			};
-		}else {
-			macro return ${helper}.makeAsync(function() ${body})();
-		}
+	
+	static function makeReturnNothingExpr(pos: Position, isLast : Bool) : Expr {
+		var valueExpr = ( useMarkers() && isLast ) ? "%%async_nothing%%" : "";
+		return macro @:pos(p(pos)) return (js.Syntax.code($v{valueExpr}) : js.lib.Promise<jsasync.Nothing>);
 	}
 
 	public static function init() {
@@ -133,7 +198,7 @@ class Macro {
 		Adds "async" to functions marked with %%async_marker%% and removes "return %%async_nothing%%;"
 	*/
 	static function fixOutputFile() {
-		if ( Context.defined("jsasync-no-fix-pass") || Sys.args().indexOf("--no-output") != -1 ) return;
+		if ( Context.defined("jsasync-no-fix-pass") || Context.defined("jsasync-no-markers") || Sys.args().indexOf("--no-output") != -1 ) return;
 		var output = Compiler.getOutput();
 		var markerRegEx = ~/((?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^()]*\)\s*{[^{}]*?)\s*%%async_marker%%;/g;
 		var returnNothingRegEx = ~/\s*return %%async_nothing%%;/g;

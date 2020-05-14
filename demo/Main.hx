@@ -61,7 +61,7 @@ class Main {
 	@:jsasync static function fetchURLAsText(url:String) {
 		try {
 			trace('Fetching $url');
-			var text = Browser.window.fetch(url).await().text();
+			var text = Browser.window.fetch(url).await().text().await();
 			trace('Fetched $url');
 			return text;
 		} catch(e : Any) {
@@ -70,7 +70,7 @@ class Main {
 		return "";
 	}
 
-	@:jsasync static function fetchJSon(url : String) {
+	@:jsasync static function fetchJSon(url : String) : Promise<Dynamic> {
 		var text = Browser.window.fetch(url).await().text().await();
 		return Json.parse(text);
 	}
