@@ -74,9 +74,14 @@ class Macro {
 			}catch( error : haxe.macro.Error ) {
 				Context.error("JSASync: " + error.message, error.pos);
 			}
+			
+			var a = macro : js.lib.Promise<T>;
+			
 
 			switch( te.t ) {
-				case TFun(_, ret): ret.follow().toComplexType();
+				case TFun(_, ret):
+					var ct = ret.follow().toComplexType();
+					ct == null? null : macro : js.lib.Promise<$ct>;
 				default: null;
 			}
 		}
@@ -86,10 +91,7 @@ class Macro {
 			case TPath({name: "Promise", pack: ["js", "lib"], params: [TPType(innerType)] }):
 				{promise: retType, inner: innerType};
 			default:
-				{
-					promise: TPath({name:"Promise", pack: ["js", "lib"], params: [TPType(retType)]}),
-					inner: retType
-				}
+				Context.error("JSASync: Function should have return type js.lib.Promise", pos);
 		}
 	}
 
