@@ -175,3 +175,7 @@ The generated code without markers is correct but is less compact and possibly a
 
 When using `-D jsasync-no-fix-pass` JSAsync will not run the final file fixing post process even if markers were generated. The output will be invalid js, use this if you wish to inspect how the code looks before the fix pass.
 
+
+# License
+
+This project is licensed under the terms of the MIT license.
