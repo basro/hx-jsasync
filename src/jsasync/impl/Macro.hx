@@ -32,7 +32,7 @@ class Macro {
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
 
-		return macro @:pos(e.pos) jsasync.impl.Helper.makeAsync(${e});
+		return macro @:pos(e.pos) std.jsasync.impl.Helper.makeAsync(${e});
 	}
 
 	/**
@@ -46,11 +46,11 @@ class Macro {
 				var body = modifyFunctionBody(f, e.pos);
 				if ( useMarkers() )
 					macro @:pos(e.pos) {
-						js.Syntax.code("%%async_marker%%");
+						std.js.Syntax.code("%%async_marker%%");
 						${body};
 					}
 				else
-					macro @:pos(e.pos) return jsasync.impl.Helper.makeAsync(function() ${body})();
+					macro @:pos(e.pos) return std.jsasync.impl.Helper.makeAsync(function() ${body})();
 		}
 	}
 
@@ -71,9 +71,6 @@ class Macro {
 			}catch( error : haxe.macro.Error ) {
 				Context.error("JSASync: " + error.message, error.pos);
 			}
-			
-			var a = macro : js.lib.Promise<T>;
-			
 
 			switch te.t {
 				case TFun(_, ret):
@@ -88,7 +85,7 @@ class Macro {
 			case TPath({name: "Promise", pack: ["js", "lib"], params: [TPType(innerType)] }):
 				{promise: retType, inner: innerType};
 			default:
-				Context.error("JSASync: Function should have return type js.lib.Promise", pos);
+				Context.error('JSASync: Function should have return type js.lib.Promise\nHave: ${retType.toString()}', pos);
 		}
 	}
 
@@ -109,7 +106,7 @@ class Macro {
 			switch field.kind {
 				case FFun(func):
 					var funcExpr = {expr: EFunction(FAnonymous, {args: [], ret:func.ret, expr: func.expr} ), pos: field.pos}
-					func.expr = macro jsasync.impl.Helper.method(${funcExpr});
+					func.expr = macro std.jsasync.impl.Helper.method(${funcExpr});
 				default:
 			}
 		}
@@ -157,7 +154,7 @@ class Macro {
 		function retMapper(re:Null<Expr>, pos:Position) {
 			return
 				if ( re == null ) macro @:pos(pos) return;
-				else macro @:pos(pos) return jsasync.impl.Helper.unwrapPromiseType(${re});
+				else macro @:pos(pos) return std.jsasync.impl.Helper.unwrapPromiseType(${re});
 		}
 
 		var f : Function = {
@@ -176,7 +173,7 @@ class Macro {
 	
 	static function makeReturnNothingExpr(pos: Position, isLast : Bool) : Expr {
 		var valueExpr = ( useMarkers() && isLast ) ? "%%async_nothing%%" : "";
-		return macro @:pos(pos) return (js.Syntax.code($v{valueExpr}) : js.lib.Promise<jsasync.Nothing>);
+		return macro @:pos(pos) return (std.js.Syntax.code($v{valueExpr}) : js.lib.Promise<std.jsasync.Nothing>);
 	}
 
 	public static function init() {
