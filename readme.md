@@ -6,7 +6,7 @@ This library lets you create native Javascript async functions in your haxe code
 For example using JSAsync this haxe code:
 ```haxe
 @:jsasync static function fetchText(url : String) {
-    return "Text: " + Browser.window.fetch(url).await().text().await();
+    return "Text: " + Browser.window.fetch(url).jsawait().text().jsawait();
 }
 ```
 Has return type `js.lib.Promise<String>`
@@ -40,11 +40,23 @@ JSAsync will convert haxe functions into async functions that return `js.lib.Pro
 
 ## Async local functions
 
-Use the `JSAsync.func` macro to convert a local function declaration into a javascript async function.
+Use the `JSAsync.jsasync` macro to convert a local function declaration into a javascript async function.
 
 Example:
 ```haxe
-var myFunc = JSAsync.func(function(val:Int) {
+var myFunc = JSAsync.jsasync(function(val:Int) {
+    return val;
+});
+```
+
+To reduce verbosity consider directly importing the macro:
+
+```haxe
+import jsasync.JSAsync.jsasync;
+
+/* ... */
+
+var myFunc = jsasync(function(val:Int) {
     return val;
 });
 ```
@@ -87,7 +99,7 @@ Add `--macro jsasync.JSAsync.use("my.package.name")` to your haxe compiler optio
 
 ## Await a promise
 
-Inside of an async function you can await a `js.lib.Promise` using the `JSAsyncTools.await` method:
+Inside of an async function you can await a `js.lib.Promise` using the `JSAsyncTools.jsawait` method:
 
 ```haxe
 import jsasync.IJSAsync;
@@ -95,15 +107,15 @@ import jsasync.JSAsyncTools;
 
 class MyClass implements IJSAsync {
     @:jsasync static function example() {
-        var result = JSAsyncTools.await(js.lib.Promise.resolve(10));
+        var result = JSAsyncTools.jsawait(js.lib.Promise.resolve(10));
         trace(result); // 10
     }
 }
 ```
 
-The `JSAsyncTools.await(promise)` function compiles into `(await promise)` in Javascript.
+The `JSAsyncTools.jsawait(promise)` function compiles into `(await promise)` in Javascript.
 
-JSAsyncTools.await() is meant to be used as a static extension:
+JSAsyncTools.jsawait() is meant to be used as a static extension:
 
 ```haxe
 import jsasync.IJSAsync;
@@ -111,11 +123,27 @@ using jsasync.JSAsyncTools;
 
 class MyClass implements IJSAsync {
     @:jsasync static function example() {
-        var result = js.lib.Promise.resolve(10).await();
+        var result = js.lib.Promise.resolve(10).jsawait();
         trace(result); // 10
     }
 }
 ```
+
+Alternatively you can import the jsawait function:
+
+```haxe
+import jsasync.IJSAsync;
+import jsasync.JSAsyncTools.jsawait;
+
+class MyClass implements IJSAsync {
+    @:jsasync static function example() {
+        var result = jsawait(js.lib.Promise.resolve(10));
+        trace(result); // 10
+    }
+}
+```
+
+You can mix both approaches too.
 
 ### Using await outside of async functions
 
@@ -149,7 +177,7 @@ Example:
 
 ### Returning Promise
 
-In javascript async functions `return myPromise` is equivalent to `return await myPromise`. JSAsync takes this into consideration and will type your functions accordingly.
+In javascript async functions the code `return myPromise` is equivalent to `return await myPromise`. JSAsync takes this into consideration and will type your functions accordingly.
 
 Example:
 ```haxe
@@ -160,7 +188,7 @@ Example:
 @:jsasync function example(test:Int) : Promise<Float> {
     switch test {
         case 1: return asyncInt(); // Promise gets unwrapped
-        case 2: return asyncInt().await();
+        case 2: return asyncInt().jsawait();
         case 3: return 10.0;
     }
 }
@@ -181,6 +209,25 @@ The generated code without markers is correct but is less compact and possibly a
 
 When using `-D jsasync-no-fix-pass` JSAsync will not run the final file fixing post process even if markers were generated. The output will be invalid js, use this if you wish to inspect how the code looks before the fix pass.
 
+
+## Recommendations
+
+### import.hx
+
+For extra convenience consider adding an [import.hx file](https://haxe.org/manual/type-system-import-defaults.html) to the root of your project with jsasync imports in it.
+
+```haxe
+// import.hx
+package my.project.root;
+
+#if js // Only import if target is js to avoid breaking your macros.
+import jsasync.JSAsync.jsasync;
+import jsasync.JSAsyncTools.jsawait;
+using jsasync.JSAsyncTools;
+#end
+```
+
+This will automatically add these imports to all the modules in your project. In combination with `--macro jsasync.JSAsync.use("my.project.root")` this will significantly reduce verbosity in your project.
 
 # License
 
