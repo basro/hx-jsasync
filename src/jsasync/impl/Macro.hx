@@ -20,14 +20,14 @@ class Macro {
 	/** Implementation of JSAsync.func macro */
 	static public function asyncFuncMacro(e : Expr) {
 		// Convert FArrow into FAnonymous
-		switch(e.expr) {
+		switch e.expr {
 			case EFunction(FArrow, f):
 				f.expr = macro @:pos(e.pos) return ${f.expr};
 				e.expr = EFunction(FAnonymous, f);
 			default:
 		}
 
-		switch(e.expr) {
+		switch e.expr {
 			case EFunction(FAnonymous, f): f.expr = modifyFunctionBody(f, e.pos);
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
@@ -75,7 +75,7 @@ class Macro {
 			var a = macro : js.lib.Promise<T>;
 			
 
-			switch( te.t ) {
+			switch te.t {
 				case TFun(_, ret):
 					var ct = ret.follow().toComplexType();
 					ct == null? null : macro : js.lib.Promise<$ct>;
@@ -106,7 +106,7 @@ class Macro {
 			var m = Lambda.find(field.meta, m -> m.name == ":jsasync");
 			if ( m == null ) continue;
 
-			switch(field.kind) {
+			switch field.kind {
 				case FFun(func):
 					var funcExpr = {expr: EFunction(FAnonymous, {args: [], ret:func.ret, expr: func.expr} ), pos: field.pos}
 					func.expr = macro jsasync.impl.Helper.method(${funcExpr});
