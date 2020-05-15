@@ -5,8 +5,16 @@ import haxe.macro.Expr;
 
 class JSAsync {
 	/** Use this macro with function expressions to turn them into async functions. */
+	//@:deprecated("JSAsync.func is deprecated, use JSAsync.jsasync instead.") // Haxe issue #9425
+	@:noCompletion
 	public static macro function func(e:Expr) {
-		return jsasync.impl.Macro.asyncFuncMacro(e);
+		haxe.macro.Context.warning("JSAsync.func is deprecated, use JSAsync.jsasync instead.", e.pos);
+		return std.jsasync.impl.Macro.asyncFuncMacro(e);
+	}
+
+	/** Use this macro with function expressions to turn them into async functions. */
+	public static macro function jsasync(e:Expr) {
+		return std.jsasync.impl.Macro.asyncFuncMacro(e);
 	}
 
 	#if macro
@@ -17,7 +25,7 @@ class JSAsync {
 		Alternatively you can use the IJSAsync interface.
 	*/
 	static macro function build() : Array<Field> {
-		return jsasync.impl.Macro.build();
+		return std.jsasync.impl.Macro.build();
 	}
 
 

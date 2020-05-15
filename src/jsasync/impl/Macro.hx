@@ -17,7 +17,7 @@ typedef PromiseTypes = {
 
 class Macro {
 
-	/** Implementation of JSAsync.func macro */
+	/** Implementation of JSAsync.jsasync macro */
 	static public function asyncFuncMacro(e : Expr) {
 		// Convert FArrow into FAnonymous
 		switch e.expr {

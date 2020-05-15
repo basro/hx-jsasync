@@ -1,59 +1,54 @@
 package demo;
 
 import haxe.Json;
-import jsasync.IJSAsync;
-import jsasync.JSAsync;
 import js.lib.Promise;
 import js.Browser;
 
-using jsasync.JSAsyncTools;
-
 class Main {
 	@:jsasync public static function main() {
-		count(10).await();
+		count(10).jsawait();
 
 		var things = Promise.all([
 			fetchURLAsText("https://twitter.github.io/"),
 			fetchURLAsText("https://twitter.github.io/projects"),
 			fetchURLAsText("https://thisurlwillsurelyfail.com/")
-		]).await();
+		]).jsawait();
 
 		trace( things.map(text -> text.length) );
 
-		// Use JSAsync.func macro to create anonymous async functions
-		var localAsyncFunction = JSAsync.func(function(name:String) {
+		var localAsyncFunction = jsasync(function(name:String) {
 			trace("Running local async function " + name);
-			timer(1000).await();
+			timer(1000).jsawait();
 			return name + " done!";
 		});
 
-		trace(localAsyncFunction("A").await());
-		trace(localAsyncFunction("B").await());
+		trace(localAsyncFunction("A").jsawait());
+		trace(localAsyncFunction("B").jsawait());
 
-		var randomWait = JSAsync.func(function() {
+		var randomWait = jsasync(function() {
 			if ( Math.random() > 0.5 ) {
 				return;
 			}
-			timer(1000).await();
+			timer(1000).jsawait();
 		});
 
-		randomWait().await();
+		randomWait().jsawait();
 
 		var a = localAsyncFunction("C");
 		var b = localAsyncFunction("D");
-		trace( a.await() + " " + b.await() );
+		trace( a.jsawait() + " " + b.jsawait() );
 	}
 
 	@:jsasync static function count(numbers:Int) {
 		trace('Counting up to $numbers');
 		for ( i in 0...10 ) {
 			trace(i);
-			timer(1000).await();
+			timer(1000).jsawait();
 		}
 	}
 
 	static function timer(msec:Int) {
-		return new Promise( function(resolve, reject) {
+		return new Promise<jsasync.Nothing>( function(resolve, reject) {
 			Browser.window.setTimeout(resolve, msec);
 		});
 	}
@@ -61,7 +56,7 @@ class Main {
 	@:jsasync static function fetchURLAsText(url:String) {
 		try {
 			trace('Fetching $url');
-			var text = Browser.window.fetch(url).await().text().await();
+			var text = Browser.window.fetch(url).jsawait().text().jsawait();
 			trace('Fetched $url');
 			return text;
 		} catch(e : Any) {
@@ -71,8 +66,12 @@ class Main {
 	}
 
 	@:jsasync static function fetchJSon(url : String) : Promise<Dynamic> {
-		var text = Browser.window.fetch(url).await().text().await();
+		var text = Browser.window.fetch(url).jsawait().text().jsawait();
 		return Json.parse(text);
+	}
+
+	static function hmmm() {
+		return fetchURLAsText("").jsawait();
 	}
 }
 
