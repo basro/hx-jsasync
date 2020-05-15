@@ -16,9 +16,6 @@ typedef PromiseTypes = {
 }
 
 class Macro {
-	static var helper = macro jsasync.impl.Helper;
-	static var jsasyncClass = macro jsasync.JSAsync;
-	static var jsSyntax = macro js.Syntax;
 
 	/** Implementation of JSAsync.func macro */
 	static public function asyncFuncMacro(e : Expr) {
@@ -35,7 +32,7 @@ class Macro {
 			default: Context.error("Argument should be an anonymous function of arrow function", e.pos);
 		}
 
-		return macro @:pos(e.pos) ${helper}.makeAsync(${e});
+		return macro @:pos(e.pos) jsasync.impl.Helper.makeAsync(${e});
 	}
 
 	/**
