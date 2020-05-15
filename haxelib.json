@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["js", "async"],
 	"description": "Native JavaScript async functions.",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"classPath": "src",
-	"releasenote": "Massively improved type inference by actively typing in the macros.",
+	"releasenote": "Deprecate JSAsync.func and JSAsyncTools.await, renamed to jsasync and jsawait.",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}
