@@ -1,3 +1,7 @@
+# 1.2.0
+
+* Use Thenable instead of Promise as argument type of JSAsyncTools.jsawait
+
 # 1.1.1
 
 * Fix incorrect js output for module level functions.
