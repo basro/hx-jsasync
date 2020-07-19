@@ -4,8 +4,24 @@ import haxe.Json;
 import js.lib.Promise;
 import js.Browser;
 
+#if(haxe >= "4.2")
+@:jsasync function moduleLevelFunction() {
+	Main.timer(1000).jsawait();
+	trace("tick");
+	Main.timer(1000).jsawait();
+	trace("tock");
+}
+#end
+
 class Main {
-	@:jsasync public static function main() {
+	public static function main() {
+		mainAsync();
+		#if ( haxe >= "4.2" )
+		moduleLevelFunction();
+		#end
+	}
+
+	@:jsasync public static function mainAsync() {
 		count(10).jsawait();
 
 		var things = Promise.all([
@@ -47,7 +63,7 @@ class Main {
 		}
 	}
 
-	static function timer(msec:Int) {
+	public static function timer(msec:Int) {
 		return new Promise<jsasync.Nothing>( function(resolve, reject) {
 			Browser.window.setTimeout(resolve, msec);
 		});
@@ -68,10 +84,6 @@ class Main {
 	@:jsasync static function fetchJSon(url : String) : Promise<Dynamic> {
 		var text = Browser.window.fetch(url).jsawait().text().jsawait();
 		return Json.parse(text);
-	}
-
-	static function hmmm() {
-		return fetchURLAsText("").jsawait();
 	}
 }
 

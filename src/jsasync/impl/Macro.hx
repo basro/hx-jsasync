@@ -189,7 +189,23 @@ class Macro {
 	static function fixOutputFile() {
 		if ( Context.defined("jsasync-no-fix-pass") || Context.defined("jsasync-no-markers") || Sys.args().indexOf("--no-output") != -1 ) return;
 		var output = Compiler.getOutput();
-		var markerRegEx = ~/((?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^()]*\)\s*{[^{}]*?)\s*%%async_marker%%;/g;
+		
+		/**
+			markerRegEx broken down:
+			( # Group 1, this will be reinserted on replacement
+				(?:function )? # Optionally match a "function " prefix
+				(?:
+					"(?:[^"\\]|\\.)*" # Match a double quoted string (functions could be quoted strings when their names include special characters)
+					|                 # Or
+					\w+               # Match an identifier
+				)
+				\s*\([^()]*\) # Match the function params as anything between parenthesis.
+				\s*{          # Match the first curly bracket after the function arguments.
+				[^{}]*?       # Match everything after the function's curly brackets, this is lazy and matches as few characters as possible.
+			)
+			\s*%%async_marker%%; # Match the marker which will be removed in the replacement.
+		*/
+		var markerRegEx = ~/((?:function )?(?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^()]*\)\s*{[^{}]*?)\s*%%async_marker%%;/g;
 		var returnNothingRegEx = ~/\s*return %%async_nothing%%;/g;
 		var outputContent = sys.io.File.getContent(output);
 		outputContent = markerRegEx.replace(outputContent, "async $1");
