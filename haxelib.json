@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["js", "async"],
 	"description": "Native JavaScript async functions.",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"classPath": "src",
-	"releasenote": "Deprecate JSAsync.func and JSAsyncTools.await, renamed to jsasync and jsawait.",
+	"releasenote": "Fix incorrect js output for module level functions.",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}

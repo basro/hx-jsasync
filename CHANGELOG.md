@@ -1,3 +1,7 @@
+# 1.1.1
+
+* Fix incorrect js output for module level functions.
+
 # 1.1.0
 
 * Rename `JSAsync.func` to `jsasync` and `JSAsyncTools.await` to `jsawait`. Trying to keep away from the names `await` and `async` since they could become keywords in future haxe versions.
