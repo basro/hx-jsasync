@@ -1,0 +1,8 @@
+-lib utest
+-lib jsasync
+-lib hxnodejs
+-cp test
+-main Main
+-D analyzer-optimize
+--dce full
+--macro jsasync.JSAsync.use()
