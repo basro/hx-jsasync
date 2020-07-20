@@ -1,5 +1,6 @@
 
 # JSAsync
+![tests status](https://github.com/basro/hx-jsasync/workflows/Tests/badge.svg?branch=master)
 
 This library lets you create native Javascript async functions in your haxe code in an ergonomic and type safe way.
 
