@@ -1,3 +1,7 @@
+# 1.2.1
+
+* Fix bug where class methods with arguments that have default values caused the jsasync marker fix pass to break.
+
 # 1.2.0
 
 * Use Thenable instead of Promise as argument type of JSAsyncTools.jsawait

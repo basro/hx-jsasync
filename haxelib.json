@@ -4,9 +4,9 @@
 	"license": "MIT",
 	"tags": ["js", "async"],
 	"description": "Native JavaScript async functions.",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"classPath": "src",
-	"releasenote": "Use Thenable instead of Promise as argument type of JSAsyncTools.jsawait",
+	"releasenote": "Fix bug where class methods with arguments that have default values caused the jsasync marker fix pass to break.",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}
