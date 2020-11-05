@@ -191,21 +191,25 @@ class Macro {
 		var output = Compiler.getOutput();
 		
 		/**
-			markerRegEx broken down:
-			( # Group 1, this will be reinserted on replacement
-				(?:function )? # Optionally match a "function " prefix
-				(?:
-					"(?:[^"\\]|\\.)*" # Match a double quoted string (functions could be quoted strings when their names include special characters)
-					|                 # Or
-					\w+               # Match an identifier
-				)
-				\s*\([^()]*\) # Match the function params as anything between parenthesis.
-				\s*{          # Match the first curly bracket after the function arguments.
-				[^{}]*?       # Match everything after the function's curly brackets, this is lazy and matches as few characters as possible.
-			)
-			\s*%%async_marker%%; # Match the marker which will be removed in the replacement.
+		* markerRegEx broken down:
+		* ( # Start of group 1, this will be reinserted on replacement
+		*   (?:function )? # Optionally match a "function " prefix
+		*   (?:
+		*     "(?:[^"\\]|\\.)*" # Match a double quoted string (functions could be quoted strings when their names include special characters)
+		*     |                 # Or
+		*     \w+               # Match an identifier
+		*   )
+		*   \s*\([^()]*\)            # Match the function params as anything between parenthesis.
+		*   \s*{                     # Match the first curly bracket after the function arguments.
+		*   (?:[^{}]|{[^{}]*?})*?    # Match everything after the function's opening curly bracket. Is lazy and matches as few
+		*                            # characters as possible.
+		*                            # It will allow 1 level of nested balanced curly brackets. This is necesary because 
+		*                            # optional arguments will generate `if ( argument == null ) { argument = defaultValue }` between
+		*                            # the function's opening curly bracket and the %%async_marker%%
+		* ) # End of group 1
+		* %%async_marker%%; # Match the marker which will be removed in the replacement.
 		*/
-		var markerRegEx = ~/((?:function )?(?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^()]*\)\s*{[^{}]*?)\s*%%async_marker%%;/g;
+		var markerRegEx = ~/((?:function )?(?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^()]*\)\s*{(?:[^{}]|{[^{}]*?})*?)%%async_marker%%;/g;
 		var returnNothingRegEx = ~/\s*return %%async_nothing%%;/g;
 		var outputContent = sys.io.File.getContent(output);
 		outputContent = markerRegEx.replace(outputContent, "async $1");
