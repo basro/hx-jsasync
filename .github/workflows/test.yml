@@ -11,7 +11,7 @@ jobs:
       run: |
         sudo add-apt-repository ppa:haxe/releases -y
         sudo apt-get update
-        sudo apt-get install haxe=1:4.1.2* -y
+        sudo apt-get install haxe=1:4.1* -y
         mkdir ~/haxelib && haxelib setup ~/haxelib
 
     - name: Install NodeJS
