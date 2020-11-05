@@ -27,9 +27,9 @@ class TestJSAsync extends Test {
 		});
 
 		var func2 = jsasync(function() {
-			Assert.equals(val, 0);
+			Assert.equals(0, val);
 			func().jsawait();
-			Assert.equals(val, 2);
+			Assert.equals(2, val);
 		});
 
 		var func3 = jsasync(function(returnVal : Int) {
@@ -44,7 +44,7 @@ class TestJSAsync extends Test {
 
 		var func5 = jsasync(function() {
 			var v = func4().jsawait();
-			Assert.equals(v, 10);
+			Assert.equals(10, v);
 		});
 
 		var run = jsasync(function() {
@@ -53,7 +53,7 @@ class TestJSAsync extends Test {
 		});
 
 		run();
-		Assert.equals(val,1);
+		Assert.equals(1, val);
 	}
 
 	function testStaticAsyncFunctions(async : Async) {
@@ -61,8 +61,8 @@ class TestJSAsync extends Test {
 			var n1 = StaticAsyncFunctions.delayNumber(50,1);
 			var n2 = StaticAsyncFunctions.delayNumber(40,2);
 			var n3 = StaticAsyncFunctions.quotedFunctionName();
-			Assert.equals(StaticAsyncFunctions.sumPromises(n1, n2).jsawait(), 3);
-			Assert.equals(n3.jsawait(), 20);
+			Assert.equals(3, StaticAsyncFunctions.sumPromises(n1, n2).jsawait());
+			Assert.equals(20, n3.jsawait());
 			async.done();
 		});
 
@@ -72,15 +72,15 @@ class TestJSAsync extends Test {
 	function testAsyncMethods(async : Async) {
 		jsasync(function() {
 			var obj = new AsyncMethods();
-			Assert.equals(obj.getVal(), 0);
+			Assert.equals(0, obj.getVal());
 			var p = obj.addIntPromise(StaticAsyncFunctions.delayNumber(20,5));
-			Assert.equals(obj.getVal(), 0);
-			Assert.equals(p.jsawait(), 5);
-			Assert.equals(obj.getVal(), 5);
-			Assert.equals(obj.quotedMethod().jsawait(),"Val: 10");
-			Assert.equals(obj.getVal(), 10);
-			Assert.equals(obj.asyncMethodWithDefaultValueArgument().jsawait(), 2);
-			Assert.equals(obj.asyncMethodWithDefaultValueArgument(1).jsawait(), 3);
+			Assert.equals(0, obj.getVal());
+			Assert.equals(5, p.jsawait());
+			Assert.equals(5, obj.getVal());
+			Assert.equals("Val: 10", obj.quotedMethod().jsawait());
+			Assert.equals(10, obj.getVal());
+			Assert.equals(2, obj.asyncMethodWithDefaultValueArgument().jsawait());
+			Assert.equals(3, obj.asyncMethodWithDefaultValueArgument(2).jsawait());
 			async.done();
 		})();
 	}
