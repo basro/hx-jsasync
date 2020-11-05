@@ -79,6 +79,8 @@ class TestJSAsync extends Test {
 			Assert.equals(obj.getVal(), 5);
 			Assert.equals(obj.quotedMethod().jsawait(),"Val: 10");
 			Assert.equals(obj.getVal(), 10);
+			Assert.equals(obj.asyncMethodWithDefaultValueArgument().jsawait(), 2);
+			Assert.equals(obj.asyncMethodWithDefaultValueArgument(1).jsawait(), 3);
 			async.done();
 		})();
 	}
@@ -113,5 +115,10 @@ class AsyncMethods {
 
 	@:native("quoted-method") @:jsasync public function quotedMethod() {
 		return "Val: " + addIntPromise(StaticAsyncFunctions.delayNumber(50,5)).jsawait();
+	}
+
+	@:jsasync public function asyncMethodWithDefaultValueArgument(num : Int = 1) {
+		timer(50).jsawait();
+		return num + 1;
 	}
 }
