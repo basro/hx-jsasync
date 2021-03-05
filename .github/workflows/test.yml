@@ -2,7 +2,7 @@ name: Tests
 on: [push, pull_request]
 
 jobs:
-  BuildAndTest:
+  BuildAndTestHaxe41:
     runs-on: ubuntu-latest
     steps:
 
@@ -12,6 +12,46 @@ jobs:
         sudo add-apt-repository ppa:haxe/releases -y
         sudo apt-get update
         sudo apt-get install haxe=1:4.1* -y
+        mkdir ~/haxelib && haxelib setup ~/haxelib
+
+    - name: Install NodeJS
+      uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+          
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Install libs
+      run: |
+        haxelib install utest
+        haxelib install hxnodejs
+        haxelib dev jsasync ./
+
+    - name: Build tests
+      run: haxe build-test.hxml
+
+    - name: Run tests
+      run: |
+        echo "*** ES5 Tests ***"
+        node ./bin/test-es5.js
+        echo "*** ES5 Tests No Markers ***"
+        node ./bin/test-es5-no-marker.js
+        echo "*** ES6 Tests ***"
+        node ./bin/test-es6.js
+        echo "*** ES6 Tests No Markers ***"
+        node ./bin/test-es6-no-marker.js
+  
+  BuildAndTestHaxe42:
+    runs-on: ubuntu-latest
+    steps:
+
+    # Install haxe from from here https://launchpad.net/~haxe/+archive/ubuntu/releases
+    - name: Install Haxe
+      run: |
+        sudo add-apt-repository ppa:haxe/releases -y
+        sudo apt-get update
+        sudo apt-get install haxe=1:4.2* -y
         mkdir ~/haxelib && haxelib setup ~/haxelib
 
     - name: Install NodeJS
