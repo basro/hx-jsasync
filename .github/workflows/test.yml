@@ -5,23 +5,18 @@ jobs:
   BuildAndTestHaxe41:
     runs-on: ubuntu-latest
     steps:
-
-    # Install haxe from from here https://launchpad.net/~haxe/+archive/ubuntu/releases
-    - name: Install Haxe
-      run: |
-        sudo add-apt-repository ppa:haxe/releases -y
-        sudo apt-get update
-        sudo apt-get install haxe=1:4.1* -y
-        mkdir ~/haxelib && haxelib setup ~/haxelib
-
     - name: Install NodeJS
       uses: actions/setup-node@v1
       with:
         node-version: '12'
-          
+    
+    - name: Install Haxe
+      uses: krdlab/setup-haxe@v1
+      with:
+        haxe-version: 4.1.5
+
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
-
     - name: Install libs
       run: |
         haxelib install utest
@@ -45,19 +40,15 @@ jobs:
   BuildAndTestHaxe42:
     runs-on: ubuntu-latest
     steps:
-
-    # Install haxe from from here https://launchpad.net/~haxe/+archive/ubuntu/releases
-    - name: Install Haxe
-      run: |
-        sudo add-apt-repository ppa:haxe/releases -y
-        sudo apt-get update
-        sudo apt-get install haxe=1:4.2* -y
-        mkdir ~/haxelib && haxelib setup ~/haxelib
-
     - name: Install NodeJS
       uses: actions/setup-node@v1
       with:
         node-version: '12'
+
+    - name: Install Haxe
+      uses: krdlab/setup-haxe@v1
+      with:
+        haxe-version: 4.2.1
           
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
