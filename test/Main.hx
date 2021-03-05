@@ -84,6 +84,15 @@ class TestJSAsync extends Test {
 			async.done();
 		})();
 	}
+
+	#if(haxe >= "4.2")
+	function testModuleLevelAsyncFunctions(async : Async) {
+		jsasync(function() {
+			Assert.equals(25, moduleLevelFunction().jsawait());
+			async.done();
+		})();
+	}
+	#end
 }
 
 class StaticAsyncFunctions {
@@ -122,3 +131,15 @@ class AsyncMethods {
 		return num + 1;
 	}
 }
+
+#if(haxe >= "4.2")
+@:jsasync function moduleLevelFunction() {
+	timer(50).jsawait();
+	return moduleLevelFunction2(10).jsawait() + 5;
+}
+
+@:jsasync function moduleLevelFunction2(num : Int) {
+	timer(50).jsawait();
+	return num + 10;
+}
+#end
