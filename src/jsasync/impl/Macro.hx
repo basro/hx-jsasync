@@ -19,6 +19,10 @@ class Macro {
 
 	/** Implementation of JSAsync.jsasync macro */
 	static public function asyncFuncMacro(e : Expr) {
+		if ( Context.containsDisplayPosition(e.pos) ) {
+			return e;
+		}
+
 		// Convert FArrow into FAnonymous
 		switch e.expr {
 			case EFunction(FArrow, f):
@@ -102,6 +106,10 @@ class Macro {
 		for ( field in fields ) {
 			var m = Lambda.find(field.meta, m -> m.name == ":jsasync");
 			if ( m == null ) continue;
+
+			if (Context.containsDisplayPosition(field.pos)) {
+				continue;
+			}
 
 			switch field.kind {
 				case FFun(func):
