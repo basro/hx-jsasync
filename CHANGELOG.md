@@ -1,3 +1,7 @@
+# 1.2.2
+
+* Avoids running the macro on functions that contain the display position to improve haxe completion reliability.
+
 # 1.2.1
 
 * Fix bug where class methods with arguments that have default values caused the jsasync marker fix pass to break.

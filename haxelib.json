@@ -6,7 +6,7 @@
 	"description": "Native JavaScript async functions.",
 	"version": "1.2.2",
 	"classPath": "src",
-	"releasenote": "Avoids running the macro on functions that contain the display position to improve haxe completion reliability.",
+	"releasenote": "See CHANGELOG",
 	"contributors": ["marioc"],
 	"dependencies": {
 	}
