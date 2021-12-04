@@ -197,7 +197,7 @@ class Macro {
 	static function fixOutputFile() {
 		if ( Context.defined("jsasync-no-fix-pass") || Context.defined("jsasync-no-markers") || Sys.args().indexOf("--no-output") != -1 ) return;
 		var output = Compiler.getOutput();
-		
+
 		/**
 		* markerRegEx broken down:
 		* ( # Start of group 1, this will be reinserted on replacement
@@ -215,12 +215,18 @@ class Macro {
 		*                            # optional arguments will generate `if ( argument == null ) { argument = defaultValue }` between
 		*                            # the function's opening curly bracket and the %%async_marker%%
 		* ) # End of group 1
-		* %%async_marker%%; # Match the marker which will be removed in the replacement.
+		* $ # End of this string (where the marker was found)
 		*/
-		var markerRegEx = ~/((?:function )?(?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^()]*\)\s*{(?:[^{}]|{[^{}]*?})*?)%%async_marker%%;/g;
+		var functionRegEx = ~/((?:function )?(?:"(?:[^"\\]|\\.)*"|\w+)\s*\([^()]*\)\s*{(?:[^{}]|{[^{}]*?})*?)$/;
 		var returnNothingRegEx = ~/\s*return %%async_nothing%%;/g;
 		var outputContent = sys.io.File.getContent(output);
-		outputContent = markerRegEx.replace(outputContent, "async $1");
+
+		var splitOutput = outputContent.split("%%async_marker%%;");
+		for ( i in 0...(splitOutput.length - 1) ) {
+			splitOutput[i] = functionRegEx.replace(splitOutput[i], "async $1");
+		}
+		outputContent = splitOutput.join("");
+
 		outputContent = returnNothingRegEx.replace(outputContent, "");
 		File.saveContent(output, outputContent);
 	}
