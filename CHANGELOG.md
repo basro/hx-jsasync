@@ -1,3 +1,7 @@
+# 1.2.3
+
+* Improves performance of the %%async_marker%% post processing pass, useful when dealing with very large js files.
+
 # 1.2.2
 
 * Avoids running the macro on functions that contain the display position to improve haxe completion reliability.
