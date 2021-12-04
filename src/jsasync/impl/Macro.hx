@@ -223,7 +223,11 @@ class Macro {
 
 		var splitOutput = outputContent.split("%%async_marker%%;");
 		for ( i in 0...(splitOutput.length - 1) ) {
-			splitOutput[i] = functionRegEx.replace(splitOutput[i], "async $1");
+			// functionRegEx crashes if searching too long a string
+			var cutoff = splitOutput[i].length - 3000;
+			var sub = splitOutput[i].substr(cutoff);
+			sub = functionRegEx.replace(sub, "async $1");
+			splitOutput[i] = splitOutput[i].substr(0, cutoff) + sub;
 		}
 		outputContent = splitOutput.join("");
 
