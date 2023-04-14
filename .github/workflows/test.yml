@@ -8,7 +8,7 @@ jobs:
     - name: Install NodeJS
       uses: actions/setup-node@v1
       with:
-        node-version: '12'
+        node-version: '16'
     
     - name: Install Haxe
       uses: krdlab/setup-haxe@v1
@@ -43,12 +43,48 @@ jobs:
     - name: Install NodeJS
       uses: actions/setup-node@v1
       with:
-        node-version: '12'
+        node-version: '16'
 
     - name: Install Haxe
       uses: krdlab/setup-haxe@v1
       with:
-        haxe-version: 4.2.1
+        haxe-version: 4.2.5
+          
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Install libs
+      run: |
+        haxelib install utest
+        haxelib install hxnodejs
+        haxelib dev jsasync ./
+
+    - name: Build tests
+      run: haxe build-test.hxml
+
+    - name: Run tests
+      run: |
+        echo "*** ES5 Tests ***"
+        node ./bin/test-es5.js
+        echo "*** ES5 Tests No Markers ***"
+        node ./bin/test-es5-no-marker.js
+        echo "*** ES6 Tests ***"
+        node ./bin/test-es6.js
+        echo "*** ES6 Tests No Markers ***"
+        node ./bin/test-es6-no-marker.js
+
+  BuildAndTestHaxe43:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install NodeJS
+      uses: actions/setup-node@v1
+      with:
+        node-version: '16'
+
+    - name: Install Haxe
+      uses: krdlab/setup-haxe@v1
+      with:
+        haxe-version: 4.3.0
           
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
