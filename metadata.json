@@ -1,0 +1,6 @@
+[{
+	"metadata": ":jsasync",
+	"doc": "Converts a method into an asynchronous function.",
+	"targets": ["TClassField"],
+	"platforms": ["js"]
+}]

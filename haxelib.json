@@ -9,5 +9,8 @@
 	"releasenote": "See CHANGELOG",
 	"contributors": ["marioc"],
 	"dependencies": {
+	},
+	"documentation": {
+		"metadata": "./metadata.json"
 	}
 }
