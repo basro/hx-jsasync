@@ -1,3 +1,7 @@
+# 1.3.0
+
+* Add custom metadata and defines documentation (for haxe 4.3.0)
+
 # 1.2.3
 
 * Improves performance of the %%async_marker%% post processing pass, useful when dealing with very large js files.
