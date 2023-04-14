@@ -1,4 +1,6 @@
 package jsasync.impl;
+
+#if (haxe_ver >= 4.30)
 import haxe.macro.Compiler;
 
 final defines : Array<DefineDescription> = [
@@ -22,3 +24,4 @@ final metadatas : Array<MetadataDescription> = [
 		"platforms": [Js]
 	}
 ];
+#end

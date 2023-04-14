@@ -190,6 +190,7 @@ class Macro {
 			Context.onAfterGenerate( fixOutputFile );
 		}
 
+		#if (haxe_ver >= 4.30) 
 		for (md in metadatas) {
 			Compiler.registerCustomMetadata(md,"jsasync");
 		}
@@ -197,6 +198,7 @@ class Macro {
 		for (d in defines) {
 			Compiler.registerCustomDefine(d,"jsasync");
 		}
+		#end
 	}
 
 	/** 
