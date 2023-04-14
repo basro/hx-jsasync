@@ -5,6 +5,7 @@ import sys.io.File;
 import haxe.macro.Compiler;
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import jsasync.impl.Doc;
 
 using haxe.macro.TypeTools;
 using haxe.macro.ComplexTypeTools;
@@ -187,6 +188,14 @@ class Macro {
 	public static function init() {
 		if ( !Context.defined("display") ) {
 			Context.onAfterGenerate( fixOutputFile );
+		}
+
+		for (md in metadatas) {
+			Compiler.registerCustomMetadata(md,"jsasync");
+		}
+
+		for (d in defines) {
+			Compiler.registerCustomDefine(d,"jsasync");
 		}
 	}
 
