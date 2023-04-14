@@ -11,7 +11,7 @@
 	"dependencies": {
 	},
 	"documentation": {
-		"metadata": "./metadata.json",
-		"defines": "./defines.json"
+		"metadata": "metadata.json",
+		"defines": "defines.json"
 	}
 }
