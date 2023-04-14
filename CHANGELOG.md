@@ -1,3 +1,7 @@
+# 1.3.1
+
+* Register metadata and defines documentation using init macro instead of haxelib.json, fixes lix installs of jsasync.
+
 # 1.3.0
 
 * Add custom metadata and defines documentation (for haxe 4.3.0)
